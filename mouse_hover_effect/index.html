@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moritz' page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<section class = "section"> 
+  <container class = "container">
+    <div class = "Intro-Wrap">
+      <p> Hallo </p>
+    </div>
+  </container>
+</section>
+
+<script> 
+
+const canvas = document.querySelector("#canvas");
+const ctx = canvas.getContext("2d");
+
+let w, h, particles;
+let particleDistance = 100;
+let mouse = {
+	x: undefined,
+	y: undefined,
+	radius: 100
+}
+
+function init() {
+  resizeReset();
+  animationLoop();
+}
+
+function initParticles(){
+
+}
+function resizeReset() {
+	w = canvas.width = window.innerWidth;
+	h = canvas.height = window.innerHeight;
+
+	particles = [];
+	
+  for (let i = 0; i < 200; i++) {
+    let x = Math.random() * w;
+    let y = Math.random() * h;
+
+    particles.push(new Particle(x, y));
+  }
+}
+
+
+function animationLoop() {
+	ctx.clearRect(0, 0, w, h);
+	drawScene();
+	requestAnimationFrame(animationLoop);
+}
+
+function drawScene() {
+	for (let i = 0; i < particles.length; i++) {
+		particles[i].update();
+		particles[i].draw();
+	}
+	drawLine();
+}
+
+function drawLine() {
+	for (let a = 0; a < particles.length; a++) {
+		for (let b = a; b < particles.length; b++) {
+			let dx = particles[a].x - particles[b].x;
+			let dy = particles[a].y - particles[b].y;
+			let distance = Math.sqrt(dx * dx + dy * dy);
+
+			if (distance < particleDistance) {
+				opacity = 1 - (distance / (particleDistance));
+				ctx.strokeStyle = "rgba(255,255,255," + opacity + ")";
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(particles[a].x, particles[a].y);
+				ctx.lineTo(particles[b].x, particles[b].y);
+				ctx.stroke();
+			}
+		}
+
+    let dx = particles[a].x - mouse.x;
+    let dy = particles[a].y - mouse.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < 1.2 * particleDistance) {
+				opacity = 2* (1 - (distance / (1.2 *particleDistance)));
+				ctx.strokeStyle = "rgba(255,255,255," + opacity + ")";
+				ctx.lineWidth = 2;
+				ctx.beginPath();
+				ctx.moveTo(particles[a].x, particles[a].y);
+				ctx.lineTo(mouse.x, mouse.y);
+				ctx.stroke();
+			}
+	}
+}
+
+function mousemove(e) {
+	mouse.x = e.x;
+	mouse.y = e.y;
+}
+
+function mouseout() {
+	mouse.x = undefined;
+	mouse.y = undefined;
+}
+
+class Particle {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+		this.size = 4;
+		this.speed = Math.random();
+    this.angle = Math.random() * (2* Math.PI);
+	}
+	draw() {
+		ctx.fillStyle = "rgba(255,255,255,1)";
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+		ctx.closePath();
+		ctx.fill();
+	}
+	update() {
+    let dx = this.speed * Math.cos(this.angle);
+    let dy = this.speed * Math.sin(this.angle);
+
+    this.x = this.x + dx
+    this.y = this.y + dy
+
+    if (this.y <= 0 || this.y >= h) {
+      this.angle = - this.angle;
+    }
+
+    if (this.x <= 0 || this.x >= w) {
+      this.angle = this.angle + (0.5 * Math.PI)
+    }
+
+}}
+
+init();
+window.addEventListener("resize", resizeReset);
+window.addEventListener("mousemove", mousemove);
+window.addEventListener("mouseout", mouseout);
+
+</script>
+
+</body>
+</html>
